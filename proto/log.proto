@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto;
+
+service Log {
+    rpc Write(LogReq) returns (LogRep) {}
+}
+
+message LogReq {
+    string  name    = 1; // instance name
+    int64   time    = 2; // log time, nanoseconds
+    int64   level   = 3; // log level
+    string  text    = 4; // log text
+}
+
+message LogRep {
+}
+

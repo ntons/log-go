@@ -1,0 +1,5 @@
+{
+    "addr":  ":50012",
+    "path":  "/tmp/logsrv/{name}/{time|2006010215}/{level}",
+    "level": "info"
+}
