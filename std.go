@@ -10,9 +10,13 @@ type globals struct {
 	Loggers map[string]Logger
 }
 
-var g unsafe.Pointer = unsafe.Pointer(&globals{
-	Std: nil, Loggers: make(map[string]Logger),
-})
+var (
+	nop Logger = &NopLogger{}
+
+	g unsafe.Pointer = unsafe.Pointer(&globals{
+		Std: nil, Loggers: make(map[string]Logger),
+	})
+)
 
 func replaceGlobalLoggers(loggers map[string]Logger) {
 	atomic.StorePointer(&g, unsafe.Pointer(&globals{
@@ -21,9 +25,30 @@ func replaceGlobalLoggers(loggers map[string]Logger) {
 	}))
 }
 
-// Get logger by name, return nil if not exist
+// Check whether logger is nop
+func IsNopLogger(l Logger) bool {
+	if l == nop {
+		return true
+	}
+	if _, ok := l.(*NopLogger); ok {
+		return true
+	}
+	return false
+}
+
+// Check Logger existance
+func IsLoggerExist(name string) bool {
+	_, ok := (*globals)(atomic.LoadPointer(&g)).Loggers[name]
+	return ok
+}
+
+// Get logger by name, return nop if not exist
 func L(name string) Logger {
-	return (*globals)(atomic.LoadPointer(&g)).Loggers[name]
+	if l, ok := (*globals)(atomic.LoadPointer(&g)).Loggers[name]; ok {
+		return l
+	} else {
+		return nop
+	}
 }
 
 func Foreach(f func(string, Logger) error) (err error) {

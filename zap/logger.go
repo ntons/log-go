@@ -116,7 +116,7 @@ func (l *Logger) IsLevelEnabled(lev log.Level) bool {
 // Builder registration
 ////////////////////////////////////////////////////////////////////////////////
 type Builder struct {
-	cfg zap.Config
+	zap.Config
 }
 
 func NewBuilder() log.Builder {
@@ -129,10 +129,10 @@ func NewDevelopmentBuilder() log.Builder {
 	return &Builder{zap.NewDevelopmentConfig()}
 }
 func (b *Builder) Build() (log.Logger, error) {
-	if l, err := b.cfg.Build(); err != nil {
+	if l, err := b.Config.Build(); err != nil {
 		return nil, err
 	} else {
-		return NewLogger(l, b.cfg.Level), nil
+		return NewLogger(l, b.Level), nil
 	}
 }
 func init() {

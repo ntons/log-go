@@ -1,0 +1,30 @@
+{
+    "zapExample": {
+        "engine": "zap",
+
+        "level": "debug",
+        "encoding": "json",
+        "outputPaths": ["stdout", "/tmp/logs"],
+        "errorOutputPaths": ["stderr"],
+        "encoderConfig": {
+            "messageKey": "msg",
+            "levelKey": "level",
+            "timeKey": "time",
+            "callerKey": "caller",
+            "levelEncoder": "lowercase",
+            "timeEncoder": "iso8601",
+            "callerEncoder": "short"
+        }
+    },
+    "logrusExample": {
+        "engine": "logrus",
+
+        "level": "debug",
+        "reportCaller": true,
+        "outpaths": ["stdout"],
+        "formatter": {
+            "encoding": "json",
+            "timestampFormat": "2006-01-02T15:04:05.000"
+        }
+    }
+}

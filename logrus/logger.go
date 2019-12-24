@@ -1,6 +1,9 @@
 package logrus
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"io"
 
 	"github.com/ntons/log-go"
@@ -127,9 +130,17 @@ func (l *Logger) IsLevelEnabled(lev log.Level) bool {
 ///////////////////////////////////////////////////////////////////////////////
 // Builder
 ///////////////////////////////////////////////////////////////////////////////
+var (
+	ErrBadFormatterConfig = errors.New("bad formatter config")
+)
+
+type FormatterConfig struct {
+	Encoding string
+}
+
 type Builder struct {
 	OutPaths     []string
-	Formatter    string
+	Formatter    json.RawMessage
 	ReportCaller bool
 	Level        logrus.Level
 }
@@ -142,13 +153,44 @@ func (cfg Builder) Build() (log.Logger, error) {
 	if err != nil {
 		return nil, err
 	}
+	// build out
 	writers := make([]io.Writer, 0, len(outs))
 	for _, out := range outs {
 		writers = append(writers, out)
 	}
+	// build formatter
+	tok, err := json.NewDecoder(bytes.NewReader(cfg.Formatter)).Token()
+	if err != nil {
+		return nil, err
+	}
+	var builder FormatterBuilder
+	switch tok.(type) {
+	case string:
+		if builder, err = newFormatterBuilder(tok.(string)); err != nil {
+			return nil, err
+		}
+	case json.Delim:
+		if tok.(json.Delim) != json.Delim('{') {
+			return nil, ErrBadFormatterConfig
+		}
+		var fc FormatterConfig
+		if err = json.Unmarshal(cfg.Formatter, &fc); err != nil {
+			return nil, err
+		}
+		if builder, err = newFormatterBuilder(fc.Encoding); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, ErrBadFormatterConfig
+	}
+	formatter, err := builder.Build()
+	if err != nil {
+		return nil, err
+	}
+	// build logger
 	l := &logrus.Logger{
 		Out:          io.MultiWriter(writers...),
-		Formatter:    nil,
+		Formatter:    formatter,
 		ReportCaller: cfg.ReportCaller,
 		Level:        cfg.Level,
 	}

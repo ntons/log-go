@@ -7,51 +7,74 @@ import (
 )
 
 type Config struct {
-	Engine string          `json:"engine"`
-	Config json.RawMessage `json:"config"`
+	Engine string `json:"engine"`
 }
 
 func ConfigFromJSON(b []byte) (err error) {
-	var root map[string]*Config
+	var root map[string]json.RawMessage
 	if err = json.Unmarshal(b, &root); err != nil {
 		return
 	}
-	var (
-		success = false
-		loggers = make(map[string]Logger)
-	)
-	defer func() {
-		if !success {
-			for _, logger := range loggers {
-				logger.Close()
-			}
+	var loggers = make(map[string]Logger)
+	for name, raw := range root {
+		var (
+			cfg     Config
+			builder Builder
+			logger  Logger
+		)
+		if err := json.Unmarshal(raw, &cfg); err != nil {
+			break
 		}
-	}()
-	for name, cfg := range root {
-		builder, err := newLoggerBuilder(name)
-		if err != nil {
-			return err
+		if builder, err = newLoggerBuilder(cfg.Engine); err != nil {
+			break
 		}
-		if err = json.Unmarshal(cfg.Config, builder); err != nil {
-			return err
+		if err = json.Unmarshal(raw, builder); err != nil {
+			break
 		}
-		logger, err := builder.Build()
-		if err != nil {
-			return err
+		if logger, err = builder.Build(); err != nil {
+			break
 		}
 		loggers[name] = logger
+	}
+	if err != nil {
+		for _, logger := range loggers {
+			logger.Close()
+		}
+		return
 	}
 	// replace global loggers
 	replaceGlobalLoggers(loggers)
 	return
 }
 
-func ConfigFromYAML(b []byte) (err error) {
-	var cfg interface{}
-	if err = yaml.Unmarshal(b, &cfg); err != nil {
-		return
+func YAMLMap2JSONMap(x interface{}) interface{} {
+	switch x := x.(type) {
+	case map[interface{}]interface{}:
+		m2 := make(map[string]interface{})
+		for k, v := range x {
+			m2[k.(string)] = YAMLMap2JSONMap(v)
+		}
+		return m2
+	case []interface{}:
+		for i, v := range x {
+			x[i] = YAMLMap2JSONMap(v)
+		}
+		return x
+	default:
+		return x
 	}
-	if b, err = json.Marshal(cfg); err != nil {
+}
+
+func YAML2JSON(b []byte) ([]byte, error) {
+	var m interface{}
+	if err := yaml.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+	return json.Marshal(YAMLMap2JSONMap(m))
+}
+
+func ConfigFromYAML(b []byte) (err error) {
+	if b, err = YAML2JSON(b); err != nil {
 		return
 	}
 	return ConfigFromJSON(b)

@@ -19,6 +19,7 @@ var (
 )
 
 func RegisterFormatter(name string, factory func() FormatterBuilder) error {
+	name = strings.ToLower(name)
 	formatterFactoryMtx.Lock()
 	defer formatterFactoryMtx.Unlock()
 	if _, ok := formatterFactoryMap[name]; ok {
@@ -26,6 +27,17 @@ func RegisterFormatter(name string, factory func() FormatterBuilder) error {
 	}
 	formatterFactoryMap[name] = factory
 	return nil
+}
+
+func newFormatterBuilder(name string) (FormatterBuilder, error) {
+	name = strings.ToLower(name)
+	formatterFactoryMtx.Lock()
+	defer formatterFactoryMtx.Unlock()
+	factory, ok := formatterFactoryMap[name]
+	if !ok {
+		return nil, fmt.Errorf("formatter not been registered for name %q", name)
+	}
+	return factory(), nil
 }
 
 func callerPrettyfier(f *runtime.Frame) (function string, file string) {

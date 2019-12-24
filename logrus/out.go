@@ -17,6 +17,17 @@ type Out interface {
 	Syncer
 }
 
+type nopCloseOut struct {
+	Out
+}
+
+func nopClose(out Out) Out {
+	return &nopCloseOut{out}
+}
+func (nopCloseOut) Close() error {
+	return nil
+}
+
 var (
 	outFactoryMtx sync.Mutex
 	outFactoryMap = make(map[string]func(*url.URL) (Out, error))
@@ -39,39 +50,56 @@ func newOut(path string) (Out, error) {
 	}
 	outFactoryMtx.Lock()
 	defer outFactoryMtx.Unlock()
-	factory, ok := outFactoryMap[u.Scheme]
+	t := u.Scheme
+	if t == "" {
+		t = u.Path // for stderr and stdout
+	}
+	factory, ok := outFactoryMap[t]
 	if !ok {
-		return nil, fmt.Errorf("no sink found for scheme %q", u.Scheme)
+		return nil, fmt.Errorf("no out found for scheme %q", t)
 	}
 	return factory(u)
 }
 
+type stdWrapper struct {
+	Out
+}
+
+func wrapStd(out Out) Out {
+	return &stdWrapper{Out: out}
+}
+func (w stdWrapper) Close() error {
+	return w.Sync()
+}
+
+var (
+	wrappedStderr = wrapStd(os.Stderr)
+	wrappedStdout = wrapStd(os.Stdout)
+)
+
 func init() {
 	RegisterOut("stdout", func(*url.URL) (Out, error) {
-		return os.Stdout, nil
+		return wrappedStdout, nil
 	})
 	RegisterOut("stderr", func(*url.URL) (Out, error) {
-		return os.Stderr, nil
+		return wrappedStderr, nil
 	})
 }
 
-func Open(paths ...string) ([]Out, error) {
-	success := false
+func Open(paths ...string) (_ []Out, err error) {
 	outs := make([]Out, 0, len(paths))
-	defer func() {
-		if !success {
-			for _, out := range outs {
-				out.Close()
-			}
-		}
-	}()
 	for _, path := range paths {
-		out, err := newOut(path)
-		if err != nil {
-			return nil, err
+		var out Out
+		if out, err = newOut(path); err != nil {
+			break
 		}
 		outs = append(outs, out)
 	}
-	success = true
+	if err != nil {
+		for _, out := range outs {
+			out.Close()
+		}
+		return
+	}
 	return outs, nil
 }

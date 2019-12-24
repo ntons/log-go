@@ -2,54 +2,39 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/ntons/log-go"
 	_ "github.com/ntons/log-go/logrus"
 	_ "github.com/ntons/log-go/zap"
 )
 
-const cfg = `{
-  "logrusExample": {
-    "engine": "logrus",
-	"config": {
-	  "level": "debug",
-	  "reportCaller": true,
-	  "out": {
-	    "type": "stderr"
-	  },
-	  "formatter": {
-	    "type": "json",
-	    "timestampFormat": "2006-01-02T15:04:05.000"
-	  }
-	}
-  },
-  "zapExample": {
-    "engine": "zap",
-	"config": {
-      "level": "debug",
-      "encoding": "json",
-      "outputPaths": ["stdout", "/tmp/logs"],
-      "errorOutputPaths": ["stderr"],
-      "encoderConfig": {
-        "messageKey": "msg",
-        "levelKey": "level",
-	    "timeKey": "time",
-		"callerKey": "caller",
-        "levelEncoder": "lowercase",
-	    "timeEncoder": "iso8601",
-		"callerEncoder": "short"
-	  }
-    }
-  }
-}`
-
 func main() {
-	if err := log.ConfigFromJSON([]byte(cfg)); err != nil {
-		fmt.Println("FromJSON fail: ", err)
+	if len(os.Args) != 2 {
+		fmt.Println("Usage:", os.Args[0], "config.{json,yaml}")
+		os.Exit(1)
+	}
+	b, err := ioutil.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Println("Fail to read", os.Args, ",", err)
+		os.Exit(1)
+	}
+	switch ext := filepath.Ext(os.Args[1]); ext {
+	case ".json":
+		err = log.ConfigFromJSON(b)
+	case ".yaml":
+		err = log.ConfigFromYAML(b)
+	default:
+		fmt.Println("Bad config ext:", ext)
+	}
+	if err != nil {
+		fmt.Println("Fail to config from", os.Args[1], ",", err)
 		return
 	}
-	//log.L("zap").Infow("test zap", log.Fields{"foo": "bar"})
-	log.L("logrus").Info("test logrus")
-	log.L("logrus").Infof("test %s", "logrus")
-	log.L("logrus").Infow("test logrus", log.Fields{"foo": "bar"})
+	log.L("zapExample").Infow("test zap", log.Fields{"foo": "bar"})
+	log.L("logrusExample").Info("test logrus")
+	log.L("logrusExample").Infof("test %s", "logrus")
+	log.L("logrusExample").Infow("test logrus", log.Fields{"foo": "bar"})
 }
