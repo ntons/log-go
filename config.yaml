@@ -1,0 +1,9 @@
+
+zapExample:
+    engine: zap
+    config: 'engine specified configuration'
+
+logrusExample:
+    engine: zap
+    config: 'engine specified configuration'
+

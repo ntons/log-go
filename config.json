@@ -1,0 +1,11 @@
+{
+    "zapExample": {
+        "engine": "zap",
+        "config": "zap specified configuration"
+    },
+
+    "logrusExampleLogger": {
+        "engine": "logrus",
+        "config": "zap specified configuration"
+    }
+}

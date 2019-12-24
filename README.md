@@ -1,1 +1,1 @@
-# log-go
+# User-friendly log interface

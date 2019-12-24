@@ -1,110 +1,116 @@
-// Copyright 2019 The Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package log
 
 import (
-	"io/ioutil"
-	"sync"
+	"sync/atomic"
+	"unsafe"
 )
 
-// global named loggers
-type namedLogger struct {
-	name   string
-	logger *Logger
+type globals struct {
+	Std     Logger
+	Loggers map[string]Logger
 }
 
-var (
-	mu  sync.Mutex
-	std *Logger = func() *Logger {
-		s := "{time|2006/01/02 15:04:05} {level} {message}"
-		appender := NewConsoleAppender()
-		appender.Layout, _ = ParseTemplate([]byte(s))
-		logger := NewLogger()
-		logger.AddAppender(appender)
-		return logger
-	}()
-)
+var g unsafe.Pointer = unsafe.Pointer(&globals{
+	Std: nil, Loggers: make(map[string]Logger),
+})
 
-func Close() {
-	mu.Lock()
-	defer mu.Unlock()
-	if std != nil {
-		std.Close()
-		std = nil
-	}
+func replaceGlobalLoggers(loggers map[string]Logger) {
+	atomic.StorePointer(&g, unsafe.Pointer(&globals{
+		Std:     loggers["std"],
+		Loggers: loggers,
+	}))
 }
 
-func ParseFile(path string) (err error) {
-	var b []byte
-	if b, err = ioutil.ReadFile(path); err != nil {
-		return
-	} else if err = ParseJSON(b); err != nil {
-		return
+// Get logger by name, return nil if not exist
+func L(name string) Logger {
+	return (*globals)(atomic.LoadPointer(&g)).Loggers[name]
+}
+
+func Foreach(f func(string, Logger) error) (err error) {
+	for name, logger := range (*globals)(atomic.LoadPointer(&g)).Loggers {
+		if err = f(name, logger); err != nil {
+			return
+		}
 	}
 	return
 }
 
-func ParseJSON(b []byte) (err error) {
-	logger := NewLogger()
-	if err = logger.ParseJSON(b); err != nil {
-		return
-	}
-	std = logger
+// sync ALL logger and return latest error
+func SyncAll() (err error) {
+	Foreach(func(_ string, logger Logger) error {
+		if syncErr := logger.Sync(); syncErr != nil {
+			err = syncErr
+		}
+		return nil
+	})
 	return
 }
 
-func Log(l Level, s string, a ...interface{}) {
-	std.log(l, nil, s, a)
-}
-func Fatal(s string, a ...interface{}) {
-	std.log(LevelFatal, nil, s, a)
-}
-func Error(s string, a ...interface{}) {
-	std.log(LevelError, nil, s, a)
-}
-func Warn(s string, a ...interface{}) {
-	std.log(LevelWarn, nil, s, a)
-}
-func Info(s string, a ...interface{}) {
-	std.log(LevelInfo, nil, s, a)
-}
-func Debug(s string, a ...interface{}) {
-	std.log(LevelDebug, nil, s, a)
-}
-func Trace(s string, a ...interface{}) {
-	std.log(LevelTrace, nil, s, a)
+// close ALL logger and return latest error
+func CloseAll() (err error) {
+	Foreach(func(_ string, logger Logger) error {
+		if closeErr := logger.Close(); closeErr != nil {
+			err = closeErr
+		}
+		return nil
+	})
+	return
 }
 
-func LogM(m M, l Level, s string, a ...interface{}) {
-	std.log(l, m, s, a)
+// standard logger for further operating
+func Std() Logger {
+	return (*globals)(atomic.LoadPointer(&g)).Std
 }
-func FatalM(m M, s string, a ...interface{}) {
-	std.log(LevelFatal, m, s, a)
+
+// ONLY Recorder interface exported
+func With(fields Fields) Recorder {
+	return Std().With(fields)
 }
-func ErrorM(m M, s string, a ...interface{}) {
-	std.log(LevelError, m, s, a)
+
+func Debug(args ...interface{}) {
+	Std().Debug(args...)
 }
-func WarnM(m M, s string, a ...interface{}) {
-	std.log(LevelWarn, m, s, a)
+func Info(args ...interface{}) {
+	Std().Info(args...)
 }
-func InfoM(m M, s string, a ...interface{}) {
-	std.log(LevelInfo, m, s, a)
+func Warn(args ...interface{}) {
+	Std().Warn(args...)
 }
-func DebugM(m M, s string, a ...interface{}) {
-	std.log(LevelDebug, m, s, a)
+func Error(args ...interface{}) {
+	Std().Error(args...)
 }
-func TraceM(m M, s string, a ...interface{}) {
-	std.log(LevelTrace, m, s, a)
+func Fatal(args ...interface{}) {
+	Std().Fatal(args...)
+}
+
+func Debugf(format string, args ...interface{}) {
+	Std().Debugf(format, args...)
+}
+func Infof(format string, args ...interface{}) {
+	Std().Infof(format, args...)
+}
+func Warnf(format string, args ...interface{}) {
+	Std().Warnf(format, args...)
+}
+func Errorf(format string, args ...interface{}) {
+	Std().Errorf(format, args...)
+}
+func Fatalf(format string, args ...interface{}) {
+	Std().Fatalf(format, args...)
+}
+
+func Debugw(msg string, fields Fields) {
+	Std().Debugw(msg, fields)
+}
+func Infow(msg string, fields Fields) {
+	Std().Infow(msg, fields)
+}
+func Warnw(msg string, fields Fields) {
+	Std().Warnw(msg, fields)
+}
+func Errorw(msg string, fields Fields) {
+	Std().Errorw(msg, fields)
+}
+func Fatalw(msg string, fields Fields) {
+	Std().Fatalw(msg, fields)
 }
