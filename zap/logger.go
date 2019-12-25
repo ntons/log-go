@@ -89,13 +89,13 @@ func (r *Recorder) Fatalw(msg string, fields log.Fields) {
 
 type Logger struct {
 	*Recorder
-	lev zap.AtomicLevel
+	atom zap.AtomicLevel
 }
 
-func NewLogger(l *zap.Logger, lev zap.AtomicLevel) *Logger {
+func NewLogger(l *zap.Logger, atom zap.AtomicLevel) *Logger {
 	return &Logger{
 		Recorder: &Recorder{sugar: l.WithOptions(zap.AddCallerSkip(1)).Sugar()},
-		lev:      lev,
+		atom:     atom,
 	}
 }
 
@@ -106,10 +106,10 @@ func (l *Logger) Sync() error {
 	return l.Recorder.sugar.Sync()
 }
 func (l *Logger) SetLevel(lev log.Level) {
-	l.lev.SetLevel(fitLevel(lev))
+	l.atom.SetLevel(fitLevel(lev))
 }
 func (l *Logger) IsLevelEnabled(lev log.Level) bool {
-	return l.lev.Enabled(fitLevel(lev))
+	return l.atom.Enabled(fitLevel(lev))
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,6 +137,6 @@ func (b *Builder) Build() (log.Logger, error) {
 }
 func init() {
 	log.RegisterLogger("zap", NewBuilder)
-	log.RegisterLogger("zap-pro", NewProductionBuilder)
-	log.RegisterLogger("zap-dev", NewDevelopmentBuilder)
+	log.RegisterLogger("zap.production", NewProductionBuilder)
+	log.RegisterLogger("zap.develepment", NewDevelopmentBuilder)
 }

@@ -18,7 +18,7 @@ var (
 	})
 )
 
-func replaceGlobalLoggers(loggers map[string]Logger) {
+func ReplaceLoggers(loggers map[string]Logger) {
 	atomic.StorePointer(&g, unsafe.Pointer(&globals{
 		Std:     loggers["std"],
 		Loggers: loggers,

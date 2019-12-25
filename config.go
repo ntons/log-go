@@ -43,7 +43,7 @@ func ConfigFromJSON(b []byte) (err error) {
 		return
 	}
 	// replace global loggers
-	replaceGlobalLoggers(loggers)
+	ReplaceLoggers(loggers)
 	return
 }
 
