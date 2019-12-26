@@ -47,7 +47,9 @@ func callerPrettyfier(f *runtime.Frame) (function string, file string) {
 	frames := runtime.CallersFrames(pcs[:depth])
 	for _f, more := frames.Next(); more; _f, more = frames.Next() {
 		if _f.PC == f.PC {
-			_f, _ = frames.Next()
+			for i := 0; i < 2 && more; i++ { // skip 2 more stack
+				_f, more = frames.Next()
+			}
 			f = &_f
 			break
 		}

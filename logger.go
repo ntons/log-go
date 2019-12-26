@@ -1,3 +1,5 @@
+// Custom Logger MUST skip 1 more caller stack for std wrapper
+
 package log
 
 import (

@@ -33,8 +33,13 @@ func main() {
 		fmt.Println("Fail to config from", os.Args[1], ",", err)
 		return
 	}
-	log.L("zapExample").Infow("test zap", log.Fields{"foo": "bar"})
-	log.L("logrusExample").Info("test logrus")
-	log.L("logrusExample").Infof("test %s", "logrus")
-	log.L("logrusExample").Infow("test logrus", log.Fields{"foo": "bar"})
+	log.L("zapExample").Info("zap::log")
+	log.L("zapExample").Infof("%s::logf", "zap")
+	log.L("zapExample").Infow("zap::logw", log.Fields{"foo": "bar"})
+	log.L("zapExample").With(log.Fields{"foo": "bar"}).Info("zap::with")
+
+	log.L("logrusExample").Info("logrus::log")
+	log.L("logrusExample").Infof("%s::logf", "logrus")
+	log.L("logrusExample").Infow("logrus::logw", log.Fields{"foo": "bar"})
+	log.L("logrusExample").With(log.Fields{"foo": "bar"}).Info("logrus::with")
 }

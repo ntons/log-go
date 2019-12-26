@@ -1,31 +1,49 @@
 package log
 
-type NopRecorder struct {
+var nop = nopLogger{}
+
+type nopRecorder struct{}
+
+func (n nopRecorder) With(fields Fields) Recorder             { return n }
+func (nopRecorder) Debug(args ...interface{})                 {}
+func (nopRecorder) Info(args ...interface{})                  {}
+func (nopRecorder) Warn(args ...interface{})                  {}
+func (nopRecorder) Error(args ...interface{})                 {}
+func (nopRecorder) Fatal(args ...interface{})                 {}
+func (nopRecorder) Debugf(format string, args ...interface{}) {}
+func (nopRecorder) Infof(format string, args ...interface{})  {}
+func (nopRecorder) Warnf(format string, args ...interface{})  {}
+func (nopRecorder) Errorf(format string, args ...interface{}) {}
+func (nopRecorder) Fatalf(format string, args ...interface{}) {}
+func (nopRecorder) Debugw(msg string, fields Fields)          {}
+func (nopRecorder) Infow(msg string, fields Fields)           {}
+func (nopRecorder) Warnw(msg string, fields Fields)           {}
+func (nopRecorder) Errorw(msg string, fields Fields)          {}
+func (nopRecorder) Fatalw(msg string, fields Fields)          {}
+
+type nopLogger struct{ nopRecorder }
+
+func (nopLogger) Write(p []byte) (int, error)   { return len(p), nil }
+func (nopLogger) Sync() error                   { return nil }
+func (nopLogger) Close() error                  { return nil }
+func (nopLogger) SetLevel(lev Level)            {}
+func (nopLogger) IsLevelEnabled(lev Level) bool { return false }
+
+// Check whether logger is nop
+func IsNop(l Logger) bool {
+	if l == nop {
+		return true
+	}
+	switch x := l.(type) {
+	case nopLogger:
+		return true
+	case *nopLogger:
+		return true
+	case deeperLogger:
+		return IsNop(x.Logger)
+	case *deeperLogger:
+		return IsNop(x.Logger)
+	default:
+		return false
+	}
 }
-
-func (n *NopRecorder) With(fields Fields) Recorder            { return n }
-func (NopRecorder) Debug(args ...interface{})                 {}
-func (NopRecorder) Info(args ...interface{})                  {}
-func (NopRecorder) Warn(args ...interface{})                  {}
-func (NopRecorder) Error(args ...interface{})                 {}
-func (NopRecorder) Fatal(args ...interface{})                 {}
-func (NopRecorder) Debugf(format string, args ...interface{}) {}
-func (NopRecorder) Infof(format string, args ...interface{})  {}
-func (NopRecorder) Warnf(format string, args ...interface{})  {}
-func (NopRecorder) Errorf(format string, args ...interface{}) {}
-func (NopRecorder) Fatalf(format string, args ...interface{}) {}
-func (NopRecorder) Debugw(msg string, fields Fields)          {}
-func (NopRecorder) Infow(msg string, fields Fields)           {}
-func (NopRecorder) Warnw(msg string, fields Fields)           {}
-func (NopRecorder) Errorw(msg string, fields Fields)          {}
-func (NopRecorder) Fatalw(msg string, fields Fields)          {}
-
-type NopLogger struct {
-	NopRecorder
-}
-
-func (NopLogger) Write(p []byte) (int, error)   { return len(p), nil }
-func (NopLogger) Sync() error                   { return nil }
-func (NopLogger) Close() error                  { return nil }
-func (NopLogger) SetLevel(lev Level)            {}
-func (NopLogger) IsLevelEnabled(lev Level) bool { return false }

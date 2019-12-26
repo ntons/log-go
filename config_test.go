@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestYAML2JSON(t *testing.T) {
+func Testyaml2json(t *testing.T) {
 	b1, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
 		t.Fatal("read config.yaml fail:", err)
@@ -18,8 +18,8 @@ func TestYAML2JSON(t *testing.T) {
 		t.Fatal("read config.json fail:", err)
 		return
 	}
-	if b1, err = YAML2JSON(b1); err != nil {
-		t.Fatal("YAML2JSON fail:", err)
+	if b1, err = yaml2json(b1); err != nil {
+		t.Fatal("yaml2json fail:", err)
 		return
 	}
 	b := bytes.NewBuffer(nil)

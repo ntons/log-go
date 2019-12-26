@@ -35,80 +35,81 @@ type Recorder struct {
 	sugar *zap.SugaredLogger
 }
 
-func (r *Recorder) With(fields log.Fields) log.Recorder {
-	return &Recorder{sugar: r.sugar.With(fitFields(fields))}
+func (r Recorder) With(fields log.Fields) log.Recorder {
+	return Recorder{sugar: r.sugar.With(fitFields(fields)...)}
 }
 
-func (r *Recorder) Debug(args ...interface{}) {
+func (r Recorder) Debug(args ...interface{}) {
 	r.sugar.Debug(args...)
 }
-func (r *Recorder) Info(args ...interface{}) {
+func (r Recorder) Info(args ...interface{}) {
 	r.sugar.Info(args...)
 }
-func (r *Recorder) Warn(args ...interface{}) {
+func (r Recorder) Warn(args ...interface{}) {
 	r.sugar.Warn(args...)
 }
-func (r *Recorder) Error(args ...interface{}) {
+func (r Recorder) Error(args ...interface{}) {
 	r.sugar.Error(args...)
 }
-func (r *Recorder) Fatal(args ...interface{}) {
+func (r Recorder) Fatal(args ...interface{}) {
 	r.sugar.Fatal(args...)
 }
 
-func (r *Recorder) Debugf(format string, args ...interface{}) {
+func (r Recorder) Debugf(format string, args ...interface{}) {
 	r.sugar.Debugf(format, args...)
 }
-func (r *Recorder) Infof(format string, args ...interface{}) {
+func (r Recorder) Infof(format string, args ...interface{}) {
 	r.sugar.Infof(format, args...)
 }
-func (r *Recorder) Warnf(format string, args ...interface{}) {
+func (r Recorder) Warnf(format string, args ...interface{}) {
 	r.sugar.Warnf(format, args...)
 }
-func (r *Recorder) Errorf(format string, args ...interface{}) {
+func (r Recorder) Errorf(format string, args ...interface{}) {
 	r.sugar.Errorf(format, args...)
 }
-func (r *Recorder) Fatalf(format string, args ...interface{}) {
+func (r Recorder) Fatalf(format string, args ...interface{}) {
 	r.sugar.Fatalf(format, args...)
 }
 
-func (r *Recorder) Debugw(msg string, fields log.Fields) {
+func (r Recorder) Debugw(msg string, fields log.Fields) {
 	r.sugar.Debugw(msg, fitFields(fields)...)
 }
-func (r *Recorder) Infow(msg string, fields log.Fields) {
+func (r Recorder) Infow(msg string, fields log.Fields) {
 	r.sugar.Infow(msg, fitFields(fields)...)
 }
-func (r *Recorder) Warnw(msg string, fields log.Fields) {
+func (r Recorder) Warnw(msg string, fields log.Fields) {
 	r.sugar.Warnw(msg, fitFields(fields)...)
 }
-func (r *Recorder) Errorw(msg string, fields log.Fields) {
+func (r Recorder) Errorw(msg string, fields log.Fields) {
 	r.sugar.Errorw(msg, fitFields(fields)...)
 }
-func (r *Recorder) Fatalw(msg string, fields log.Fields) {
+func (r Recorder) Fatalw(msg string, fields log.Fields) {
 	r.sugar.Fatalw(msg, fitFields(fields)...)
 }
 
 type Logger struct {
-	*Recorder
+	Recorder
 	atom zap.AtomicLevel
 }
 
-func NewLogger(l *zap.Logger, atom zap.AtomicLevel) *Logger {
-	return &Logger{
-		Recorder: &Recorder{sugar: l.WithOptions(zap.AddCallerSkip(1)).Sugar()},
+func NewLogger(l *zap.Logger, atom zap.AtomicLevel) Logger {
+	l = l.WithOptions(zap.AddCallerSkip(2))
+	return Logger{
+		Recorder: Recorder{sugar: l.Sugar()},
 		atom:     atom,
 	}
 }
 
-func (l *Logger) Close() error {
+func (l Logger) Close() error {
 	return nil
 }
-func (l *Logger) Sync() error {
+func (l Logger) Sync() error {
 	return l.Recorder.sugar.Sync()
 }
-func (l *Logger) SetLevel(lev log.Level) {
+func (l Logger) SetLevel(lev log.Level) {
 	l.atom.SetLevel(fitLevel(lev))
 }
-func (l *Logger) IsLevelEnabled(lev log.Level) bool {
+func (l Logger) IsLevelEnabled(lev log.Level) bool {
 	return l.atom.Enabled(fitLevel(lev))
 }
 
@@ -123,10 +124,10 @@ func NewBuilder() log.Builder {
 	return &Builder{}
 }
 func NewProductionBuilder() log.Builder {
-	return &Builder{zap.NewProductionConfig()}
+	return &Builder{Config: zap.NewProductionConfig()}
 }
 func NewDevelopmentBuilder() log.Builder {
-	return &Builder{zap.NewDevelopmentConfig()}
+	return &Builder{Config: zap.NewDevelopmentConfig()}
 }
 func (b *Builder) Build() (log.Logger, error) {
 	if l, err := b.Config.Build(); err != nil {

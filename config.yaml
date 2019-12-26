@@ -1,3 +1,9 @@
+loggers:
+    - zapExample
+    - logrusExample
+
+default: zapExample
+
 zapExample: 
     engine: zap
 
