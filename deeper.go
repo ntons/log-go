@@ -60,7 +60,7 @@ type deeperLogger struct {
 }
 
 func (d deeperLogger) With(fields Fields) Recorder {
-	return &deeperRecorder{d.Logger.With(fields)}
+	return deeperRecorder{d.Logger.With(fields)}
 }
 func (d deeperLogger) Debug(args ...interface{}) {
 	d.Logger.Debug(args...)

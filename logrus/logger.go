@@ -143,8 +143,8 @@ type Builder struct {
 func newBuilder() log.Builder {
 	return &Builder{}
 }
-func (cfg Builder) Build() (log.Logger, error) {
-	outs, err := Open(cfg.OutPaths...)
+func (b *Builder) Build() (log.Logger, error) {
+	outs, err := Open(b.OutPaths...)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (cfg Builder) Build() (log.Logger, error) {
 		writers = append(writers, out)
 	}
 	// build formatter
-	tok, err := json.NewDecoder(bytes.NewReader(cfg.Formatter)).Token()
+	tok, err := json.NewDecoder(bytes.NewReader(b.Formatter)).Token()
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (cfg Builder) Build() (log.Logger, error) {
 			return nil, ErrBadFormatterConfig
 		}
 		var fc FormatterConfig
-		if err = json.Unmarshal(cfg.Formatter, &fc); err != nil {
+		if err = json.Unmarshal(b.Formatter, &fc); err != nil {
 			return nil, err
 		}
 		if builder, err = newFormatterBuilder(fc.Encoding); err != nil {
@@ -186,10 +186,10 @@ func (cfg Builder) Build() (log.Logger, error) {
 	l := &logrus.Logger{
 		Out:          io.MultiWriter(writers...),
 		Formatter:    formatter,
-		ReportCaller: cfg.ReportCaller,
-		Level:        cfg.Level,
+		ReportCaller: b.ReportCaller,
+		Level:        b.Level,
 	}
-	return &Logger{
+	return Logger{
 		Recorder: Recorder{e: logrus.NewEntry(l)},
 		outs:     outs,
 	}, nil

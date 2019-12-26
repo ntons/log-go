@@ -22,7 +22,7 @@ type nopCloseOut struct {
 }
 
 func nopClose(out Out) Out {
-	return &nopCloseOut{out}
+	return nopCloseOut{out}
 }
 func (nopCloseOut) Close() error {
 	return nil
@@ -66,7 +66,7 @@ type stdWrapper struct {
 }
 
 func wrapStd(out Out) Out {
-	return &stdWrapper{Out: out}
+	return stdWrapper{Out: out}
 }
 func (w stdWrapper) Close() error {
 	return w.Sync()

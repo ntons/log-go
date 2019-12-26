@@ -4,7 +4,8 @@ var nop = nopLogger{}
 
 type nopRecorder struct{}
 
-func (n nopRecorder) With(fields Fields) Recorder             { return n }
+func (nopRecorder) With(Fields) Recorder { return nopRecorder{} }
+
 func (nopRecorder) Debug(args ...interface{})                 {}
 func (nopRecorder) Info(args ...interface{})                  {}
 func (nopRecorder) Warn(args ...interface{})                  {}

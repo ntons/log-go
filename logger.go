@@ -80,9 +80,9 @@ func newLoggerBuilder(name string) (Builder, error) {
 	name = strings.ToLower(name)
 	_factoryMtx.Lock()
 	defer _factoryMtx.Unlock()
-	factory, ok := _factoryMap[name]
-	if !ok {
+	if factory, ok := _factoryMap[name]; !ok {
 		return nil, fmt.Errorf("no logger registered for name %q", name)
+	} else {
+		return factory(), nil
 	}
-	return factory(), nil
 }

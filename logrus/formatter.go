@@ -69,7 +69,7 @@ type textFormatterBuilder struct {
 }
 
 func newTextFormatterBuilder() FormatterBuilder {
-	return &textFormatterBuilder{
+	return textFormatterBuilder{
 		TextFormatter: &logrus.TextFormatter{
 			CallerPrettyfier: callerPrettyfier,
 		},
@@ -84,7 +84,7 @@ type jsonFormatterBuilder struct {
 }
 
 func newJSONFormatterBuilder() FormatterBuilder {
-	return &jsonFormatterBuilder{
+	return jsonFormatterBuilder{
 		JSONFormatter: &logrus.JSONFormatter{
 			CallerPrettyfier: callerPrettyfier,
 		},

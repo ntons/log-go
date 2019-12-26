@@ -33,13 +33,15 @@ func main() {
 		fmt.Println("Fail to config from", os.Args[1], ",", err)
 		return
 	}
-	log.L("zapExample").Info("zap::log")
-	log.L("zapExample").Infof("%s::logf", "zap")
-	log.L("zapExample").Infow("zap::logw", log.Fields{"foo": "bar"})
-	log.L("zapExample").With(log.Fields{"foo": "bar"}).Info("zap::with")
+	log.L("zapExample").Info("zap.log")
+	log.L("zapExample").Infof("%s.logf", "zap")
+	log.L("zapExample").Infow("zap.logw", log.Fields{"foo": "bar"})
+	log.L("zapExample").With(log.Fields{"foo": "bar"}).Info("zap.with")
+	log.L("zapExample").With(log.Fields{"foo1": "bar1"}).With(log.Fields{"foo2": "bar2"}).Info("zap.with.with")
 
-	log.L("logrusExample").Info("logrus::log")
-	log.L("logrusExample").Infof("%s::logf", "logrus")
-	log.L("logrusExample").Infow("logrus::logw", log.Fields{"foo": "bar"})
-	log.L("logrusExample").With(log.Fields{"foo": "bar"}).Info("logrus::with")
+	log.L("logrusExample").Info("logrus.log")
+	log.L("logrusExample").Infof("%s.logf", "logrus")
+	log.L("logrusExample").Infow("logrus.logw", log.Fields{"foo": "bar"})
+	log.L("logrusExample").With(log.Fields{"foo": "bar"}).Info("logrus.with")
+	log.L("logrusExample").With(log.Fields{"foo1": "bar1"}).With(log.Fields{"foo2": "bar2"}).Info("zap.with.with")
 }

@@ -23,9 +23,8 @@ func ConfigFromJSON(b []byte) (err error) {
 	if err = json.Unmarshal(b, &cfg); err != nil {
 		return
 	}
-	fmt.Println(cfg)
 	if len(cfg.Loggers) == 0 {
-		return fmt.Errorf("config field %q is required", "loggers")
+		return fmt.Errorf("config field \"loggers\" is required")
 	}
 	if cfg.Default == "" {
 		cfg.Default = cfg.Loggers[0]
