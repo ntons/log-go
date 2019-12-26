@@ -24,120 +24,92 @@ func fitLevel(lev log.Level) zapcore.Level {
 		return zapcore.WarnLevel
 	case log.ErrorLevel:
 		return zapcore.ErrorLevel
+	case log.PanicLevel:
+		return zapcore.PanicLevel
 	case log.FatalLevel:
 		return zapcore.FatalLevel
 	default:
-		return zapcore.PanicLevel
+		panic("invalid log level")
 	}
 }
 
 type Recorder struct {
-	sugar *zap.SugaredLogger
-}
-
-func (r Recorder) With(fields log.Fields) log.Recorder {
-	return Recorder{sugar: r.sugar.With(fitFields(fields)...)}
+	s *zap.SugaredLogger
 }
 
 func (r Recorder) Debug(args ...interface{}) {
-	r.sugar.Debug(args...)
+	r.s.Debug(args...)
 }
 func (r Recorder) Info(args ...interface{}) {
-	r.sugar.Info(args...)
+	r.s.Info(args...)
 }
 func (r Recorder) Warn(args ...interface{}) {
-	r.sugar.Warn(args...)
+	r.s.Warn(args...)
 }
 func (r Recorder) Error(args ...interface{}) {
-	r.sugar.Error(args...)
+	r.s.Error(args...)
+}
+func (r Recorder) Panic(args ...interface{}) {
+	r.s.Panic(args...)
 }
 func (r Recorder) Fatal(args ...interface{}) {
-	r.sugar.Fatal(args...)
+	r.s.Fatal(args...)
 }
 
 func (r Recorder) Debugf(format string, args ...interface{}) {
-	r.sugar.Debugf(format, args...)
+	r.s.Debugf(format, args...)
 }
 func (r Recorder) Infof(format string, args ...interface{}) {
-	r.sugar.Infof(format, args...)
+	r.s.Infof(format, args...)
 }
 func (r Recorder) Warnf(format string, args ...interface{}) {
-	r.sugar.Warnf(format, args...)
+	r.s.Warnf(format, args...)
 }
 func (r Recorder) Errorf(format string, args ...interface{}) {
-	r.sugar.Errorf(format, args...)
+	r.s.Errorf(format, args...)
+}
+func (r Recorder) Panicf(format string, args ...interface{}) {
+	r.s.Panicf(format, args...)
 }
 func (r Recorder) Fatalf(format string, args ...interface{}) {
-	r.sugar.Fatalf(format, args...)
+	r.s.Fatalf(format, args...)
 }
 
 func (r Recorder) Debugw(msg string, fields log.Fields) {
-	r.sugar.Debugw(msg, fitFields(fields)...)
+	r.s.Debugw(msg, fitFields(fields)...)
 }
 func (r Recorder) Infow(msg string, fields log.Fields) {
-	r.sugar.Infow(msg, fitFields(fields)...)
+	r.s.Infow(msg, fitFields(fields)...)
 }
 func (r Recorder) Warnw(msg string, fields log.Fields) {
-	r.sugar.Warnw(msg, fitFields(fields)...)
+	r.s.Warnw(msg, fitFields(fields)...)
 }
 func (r Recorder) Errorw(msg string, fields log.Fields) {
-	r.sugar.Errorw(msg, fitFields(fields)...)
+	r.s.Errorw(msg, fitFields(fields)...)
+}
+func (r Recorder) Panicw(msg string, fields log.Fields) {
+	r.s.Panicw(msg, fitFields(fields)...)
 }
 func (r Recorder) Fatalw(msg string, fields log.Fields) {
-	r.sugar.Fatalw(msg, fitFields(fields)...)
+	r.s.Fatalw(msg, fitFields(fields)...)
+}
+
+func (r Recorder) With(fields log.Fields) log.Recorder {
+	return Recorder{s: r.s.With(fitFields(fields)...)}
 }
 
 type Logger struct {
 	Recorder
-	atom zap.AtomicLevel
 }
 
-func NewLogger(l *zap.Logger, atom zap.AtomicLevel) Logger {
-	l = l.WithOptions(zap.AddCallerSkip(2))
-	return Logger{
-		Recorder: Recorder{sugar: l.Sugar()},
-		atom:     atom,
-	}
+func NewLogger(l *zap.Logger) Logger {
+	// skip 2 more callstack, 1 for myself, 1 for log-go
+	s := l.WithOptions(zap.AddCallerSkip(2)).Sugar()
+	return Logger{Recorder: Recorder{s: s}}
 }
-
 func (l Logger) Close() error {
 	return nil
 }
 func (l Logger) Sync() error {
-	return l.Recorder.sugar.Sync()
-}
-func (l Logger) SetLevel(lev log.Level) {
-	l.atom.SetLevel(fitLevel(lev))
-}
-func (l Logger) IsLevelEnabled(lev log.Level) bool {
-	return l.atom.Enabled(fitLevel(lev))
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Builder registration
-////////////////////////////////////////////////////////////////////////////////
-type Builder struct {
-	zap.Config
-}
-
-func NewBuilder() log.Builder {
-	return &Builder{}
-}
-func NewProductionBuilder() log.Builder {
-	return &Builder{Config: zap.NewProductionConfig()}
-}
-func NewDevelopmentBuilder() log.Builder {
-	return &Builder{Config: zap.NewDevelopmentConfig()}
-}
-func (b *Builder) Build() (log.Logger, error) {
-	if l, err := b.Config.Build(); err != nil {
-		return nil, err
-	} else {
-		return NewLogger(l, b.Level), nil
-	}
-}
-func init() {
-	log.RegisterLogger("zap", NewBuilder)
-	log.RegisterLogger("zap.production", NewProductionBuilder)
-	log.RegisterLogger("zap.develepment", NewDevelopmentBuilder)
+	return l.s.Sync()
 }

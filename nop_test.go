@@ -14,10 +14,4 @@ func TestIsNop(t *testing.T) {
 	if !IsNop(&nopLogger{}) {
 		t.Fatal("fail")
 	}
-	if !IsNop(deeperLogger{nop}) {
-		t.Fatal("fail")
-	}
-	if !IsNop(&deeperLogger{nop}) {
-		t.Fatal("fail")
-	}
 }
