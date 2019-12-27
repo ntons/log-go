@@ -9,12 +9,12 @@ type box struct{ Logger }
 
 var (
 	std *box = &box{nop}
-	mu  sync.RWMutex
+	// prevent logging while replacing
+	mu sync.RWMutex
 )
 
 func ReplaceStd(new Logger) (old Logger) {
-	// the only place require write lock
-	mu.Lock()
+	mu.Lock() // the only place require write lock
 	defer mu.Unlock()
 	old, std = std.Logger, &box{new}
 	return
@@ -106,5 +106,5 @@ func Fatalw(msg string, fields Fields) {
 func With(fields Fields) Recorder {
 	mu.RLock()
 	defer mu.RUnlock()
-	return newZip(std, fields)
+	return newWrap(std, fields)
 }
