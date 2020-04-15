@@ -1,6 +1,7 @@
 package log
 
 import (
+	"os"
 	"sync"
 )
 
@@ -8,7 +9,7 @@ import (
 type box struct{ Logger }
 
 var (
-	std *box = &box{nop}
+	std *box = &box{NewDemoLogger(os.Stdout, "")}
 	// prevent logging while replacing
 	mu sync.RWMutex
 )

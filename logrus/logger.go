@@ -103,9 +103,9 @@ type Logger struct {
 	CloseFunc func() error
 }
 
-func NewLogger(ll *logrus.Logger) Logger {
+func NewLogger(l *logrus.Logger) Logger {
 	return Logger{
-		Recorder: Recorder{e: logrus.NewEntry(ll)},
+		Recorder: Recorder{e: logrus.NewEntry(l)},
 	}
 }
 

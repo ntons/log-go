@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 type DemoLogger struct {
@@ -18,13 +19,19 @@ func NewDemoLogger(out io.Writer, name string) DemoLogger {
 }
 
 func (l DemoLogger) write(fields Fields) {
-	fields["name"] = l.Name
 	for key, val := range l.Fields {
 		fields[key] = val
 	}
-	b, _ := json.Marshal(fields)
-	b = append(b, '\n')
-	l.Out.Write(b)
+	lev := fields["lev"]
+	delete(fields, "lev")
+	b, err := json.Marshal(fields)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintf(
+		l.Out, "%s %s[%s] %s\n",
+		time.Now().Format("2006-01-02 15:04:05.000"),
+		l.Name, lev, b)
 }
 
 func (l DemoLogger) Close() error {
@@ -36,103 +43,103 @@ func (l DemoLogger) Sync() error {
 }
 func (l DemoLogger) Debug(args ...interface{}) {
 	l.write(Fields{
-		"lev": "debug",
+		"lev": "D",
 		"msg": fmt.Sprint(args...),
 	})
 }
 func (l DemoLogger) Info(args ...interface{}) {
 	l.write(Fields{
-		"lev": "info",
+		"lev": "I",
 		"msg": fmt.Sprint(args...),
 	})
 }
 func (l DemoLogger) Warn(args ...interface{}) {
 	l.write(Fields{
-		"lev": "warn",
+		"lev": "W",
 		"msg": fmt.Sprint(args...),
 	})
 }
 func (l DemoLogger) Error(args ...interface{}) {
 	l.write(Fields{
-		"lev": "error",
+		"lev": "E",
 		"msg": fmt.Sprint(args...),
 	})
 }
 func (l DemoLogger) Panic(args ...interface{}) {
 	l.write(Fields{
-		"lev": "panic",
+		"lev": "P",
 		"msg": fmt.Sprint(args...),
 	})
 	panic(fmt.Sprint(args...))
 }
 func (l DemoLogger) Fatal(args ...interface{}) {
 	l.write(Fields{
-		"lev": "fatal",
+		"lev": "F",
 		"msg": fmt.Sprint(args...),
 	})
 	os.Exit(1)
 }
 func (l DemoLogger) Debugf(format string, args ...interface{}) {
 	l.write(Fields{
-		"lev": "debug",
+		"lev": "D",
 		"msg": fmt.Sprintf(format, args...),
 	})
 }
 func (l DemoLogger) Infof(format string, args ...interface{}) {
 	l.write(Fields{
-		"lev": "info",
+		"lev": "I",
 		"msg": fmt.Sprintf(format, args...),
 	})
 }
 func (l DemoLogger) Warnf(format string, args ...interface{}) {
 	l.write(Fields{
-		"lev": "warn",
+		"lev": "W",
 		"msg": fmt.Sprintf(format, args...),
 	})
 }
 func (l DemoLogger) Errorf(format string, args ...interface{}) {
 	l.write(Fields{
-		"lev": "error",
+		"lev": "E",
 		"msg": fmt.Sprintf(format, args...),
 	})
 }
 func (l DemoLogger) Panicf(format string, args ...interface{}) {
 	l.write(Fields{
-		"lev": "panic",
+		"lev": "P",
 		"msg": fmt.Sprintf(format, args...),
 	})
 	panic(fmt.Sprintf(format, args...))
 }
 func (l DemoLogger) Fatalf(format string, args ...interface{}) {
 	l.write(Fields{
-		"lev": "fatal",
+		"lev": "F",
 		"msg": fmt.Sprintf(format, args...),
 	})
 	os.Exit(1)
 }
 func (l DemoLogger) Debugw(msg string, fields Fields) {
-	fields["lev"], fields["msg"] = "debug", msg
+	fields["lev"], fields["msg"] = "D", msg
 	l.write(fields)
 }
 func (l DemoLogger) Infow(msg string, fields Fields) {
-	fields["lev"], fields["msg"] = "info", msg
+	fields["lev"], fields["msg"] = "I", msg
 	l.write(fields)
 }
 func (l DemoLogger) Warnw(msg string, fields Fields) {
-	fields["lev"], fields["msg"] = "warn", msg
+	fields["lev"], fields["msg"] = "W", msg
 	l.write(fields)
 }
 func (l DemoLogger) Errorw(msg string, fields Fields) {
-	fields["lev"], fields["msg"] = "error", msg
+	fields["lev"], fields["msg"] = "E", msg
 	l.write(fields)
 }
 func (l DemoLogger) Panicw(msg string, fields Fields) {
-	fields["lev"], fields["msg"] = "panic", msg
+	fields["lev"], fields["msg"] = "P", msg
 	l.write(fields)
 	panic(msg)
 }
 func (l DemoLogger) Fatalw(msg string, fields Fields) {
-	fields["lev"], fields["msg"] = "fatal", msg
+	fields["lev"], fields["msg"] = "F", msg
 	l.write(fields)
 	os.Exit(1)
 }
