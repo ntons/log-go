@@ -1,7 +1,6 @@
 package log
 
 import (
-	"os"
 	"testing"
 )
 
@@ -15,14 +14,14 @@ func TestStd(t *testing.T) {
 		Infof("%v %v", msg, "Infof")
 		Warnf("%v %v", msg, "Warnf")
 		Errorf("%v %v", msg, "Errorf")
-		Debugw(msg, Fields{"method": "Debugw"})
-		Infow(msg, Fields{"method": "Infow"})
-		Warnw(msg, Fields{"method": "Warnw"})
-		Errorw(msg, Fields{"method": "Errorw"})
+		Debug(msg, Fields{"method": "Debugw"})
+		Info(msg, Fields{"method": "Infow"})
+		Warn(msg, Fields{"method": "Warnw"})
+		Error(msg, Fields{"method": "Errorw"})
 	}
-	ReplaceStd(NewDemoLogger(os.Stdout, "log1")).Close()
+	ReplaceStd(ConsoleLogger{}).Close()
 	Log("TestStd")
-	ReplaceStd(NewDemoLogger(os.Stdout, "log2")).Close()
+	ReplaceStd(ConsoleLogger{}).Close()
 	Log("TestStd")
 	Close()
 }

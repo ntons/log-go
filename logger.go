@@ -6,8 +6,6 @@ import (
 	"io"
 )
 
-type Fields map[string]interface{}
-
 type Syncer interface {
 	Sync() error
 }
@@ -28,14 +26,6 @@ type Recorder interface {
 	Errorf(format string, args ...interface{})
 	Panicf(format string, args ...interface{})
 	Fatalf(format string, args ...interface{})
-
-	// structured
-	Debugw(msg string, fields Fields)
-	Infow(msg string, fields Fields)
-	Warnw(msg string, fields Fields)
-	Errorw(msg string, fields Fields)
-	Panicw(msg string, fields Fields)
-	Fatalw(msg string, fields Fields)
 
 	// preset fields
 	With(fields Fields) Recorder

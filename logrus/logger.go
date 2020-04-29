@@ -41,22 +41,52 @@ func (l Recorder) With(fields log.Fields) log.Recorder {
 }
 
 func (e Recorder) Debug(args ...interface{}) {
-	e.e.Debug(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		e.e.Debug(args...)
+	} else {
+		e.e.WithFields(logrus.Fields(fields)).Debug(args...)
+	}
 }
 func (e Recorder) Info(args ...interface{}) {
-	e.e.Info(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		e.e.Info(args...)
+	} else {
+		e.e.WithFields(logrus.Fields(fields)).Info(args...)
+	}
 }
 func (e Recorder) Warn(args ...interface{}) {
-	e.e.Warn(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		e.e.Warn(args...)
+	} else {
+		e.e.WithFields(logrus.Fields(fields)).Warn(args...)
+	}
 }
 func (e Recorder) Error(args ...interface{}) {
-	e.e.Error(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		e.e.Error(args...)
+	} else {
+		e.e.WithFields(logrus.Fields(fields)).Error(args...)
+	}
 }
 func (e Recorder) Panic(args ...interface{}) {
-	e.e.Panic(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		e.e.Panic(args...)
+	} else {
+		e.e.WithFields(logrus.Fields(fields)).Panic(args...)
+	}
 }
 func (e Recorder) Fatal(args ...interface{}) {
-	e.e.Fatal(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		e.e.Fatal(args...)
+	} else {
+		e.e.WithFields(logrus.Fields(fields)).Fatal(args...)
+	}
 }
 
 func (e Recorder) Debugf(format string, args ...interface{}) {
@@ -76,25 +106,6 @@ func (e Recorder) Panicf(format string, args ...interface{}) {
 }
 func (e Recorder) Fatalf(format string, args ...interface{}) {
 	e.e.Fatalf(format, args...)
-}
-
-func (e Recorder) Debugw(msg string, fields log.Fields) {
-	e.e.WithFields(logrus.Fields(fields)).Debug(msg)
-}
-func (e Recorder) Infow(msg string, fields log.Fields) {
-	e.e.WithFields(logrus.Fields(fields)).Info(msg)
-}
-func (e Recorder) Warnw(msg string, fields log.Fields) {
-	e.e.WithFields(logrus.Fields(fields)).Warn(msg)
-}
-func (e Recorder) Errorw(msg string, fields log.Fields) {
-	e.e.WithFields(logrus.Fields(fields)).Error(msg)
-}
-func (e Recorder) Panicw(msg string, fields log.Fields) {
-	e.e.WithFields(logrus.Fields(fields)).Panic(msg)
-}
-func (e Recorder) Fatalw(msg string, fields log.Fields) {
-	e.e.WithFields(logrus.Fields(fields)).Fatal(msg)
 }
 
 type Logger struct {

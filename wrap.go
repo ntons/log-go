@@ -125,39 +125,3 @@ func (w *wrap) Fatalf(format string, args ...interface{}) {
 	w.check()
 	w.r.Fatalf(format, args...)
 }
-func (w *wrap) Debugw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	w.check()
-	w.r.Debugw(msg, fields)
-}
-func (w *wrap) Infow(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	w.check()
-	w.r.Infow(msg, fields)
-}
-func (w *wrap) Warnw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	w.check()
-	w.r.Warnw(msg, fields)
-}
-func (w *wrap) Errorw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	w.check()
-	w.r.Errorw(msg, fields)
-}
-func (w *wrap) Panicw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	w.check()
-	w.r.Panicw(msg, fields)
-}
-func (w *wrap) Fatalw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	w.check()
-	w.r.Fatalw(msg, fields)
-}

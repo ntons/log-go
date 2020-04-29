@@ -1,6 +1,8 @@
 package zap
 
 import (
+	"fmt"
+
 	"github.com/ntons/log-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -38,22 +40,52 @@ type Recorder struct {
 }
 
 func (r Recorder) Debug(args ...interface{}) {
-	r.s.Debug(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		r.s.Debug(args...)
+	} else {
+		r.s.Debugw(fmt.Sprint(args...), fitFields(fields))
+	}
 }
 func (r Recorder) Info(args ...interface{}) {
-	r.s.Info(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		r.s.Info(args...)
+	} else {
+		r.s.Infow(fmt.Sprint(args...), fitFields(fields))
+	}
 }
 func (r Recorder) Warn(args ...interface{}) {
-	r.s.Warn(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		r.s.Warn(args...)
+	} else {
+		r.s.Warnw(fmt.Sprint(args...), fitFields(fields))
+	}
 }
 func (r Recorder) Error(args ...interface{}) {
-	r.s.Error(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		r.s.Error(args...)
+	} else {
+		r.s.Errorw(fmt.Sprint(args...), fitFields(fields))
+	}
 }
 func (r Recorder) Panic(args ...interface{}) {
-	r.s.Panic(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		r.s.Panic(args...)
+	} else {
+		r.s.Panicw(fmt.Sprint(args...), fitFields(fields))
+	}
 }
 func (r Recorder) Fatal(args ...interface{}) {
-	r.s.Fatal(args...)
+	fields, args := log.ExtractFields(args)
+	if len(fields) == 0 {
+		r.s.Fatal(args...)
+	} else {
+		r.s.Fatalw(fmt.Sprint(args...), fitFields(fields))
+	}
 }
 
 func (r Recorder) Debugf(format string, args ...interface{}) {
@@ -73,25 +105,6 @@ func (r Recorder) Panicf(format string, args ...interface{}) {
 }
 func (r Recorder) Fatalf(format string, args ...interface{}) {
 	r.s.Fatalf(format, args...)
-}
-
-func (r Recorder) Debugw(msg string, fields log.Fields) {
-	r.s.Debugw(msg, fitFields(fields)...)
-}
-func (r Recorder) Infow(msg string, fields log.Fields) {
-	r.s.Infow(msg, fitFields(fields)...)
-}
-func (r Recorder) Warnw(msg string, fields log.Fields) {
-	r.s.Warnw(msg, fitFields(fields)...)
-}
-func (r Recorder) Errorw(msg string, fields log.Fields) {
-	r.s.Errorw(msg, fitFields(fields)...)
-}
-func (r Recorder) Panicw(msg string, fields log.Fields) {
-	r.s.Panicw(msg, fitFields(fields)...)
-}
-func (r Recorder) Fatalw(msg string, fields log.Fields) {
-	r.s.Fatalw(msg, fitFields(fields)...)
 }
 
 func (r Recorder) With(fields log.Fields) log.Recorder {

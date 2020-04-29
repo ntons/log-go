@@ -1,7 +1,6 @@
 package log
 
 import (
-	"os"
 	"sync"
 )
 
@@ -9,7 +8,7 @@ import (
 type box struct{ Logger }
 
 var (
-	std *box = &box{NewDemoLogger(os.Stdout, "")}
+	std *box = &box{NewConsoleLogger(true)}
 	// prevent logging while replacing
 	mu sync.RWMutex
 )
@@ -54,6 +53,7 @@ func Fatal(args ...interface{}) {
 	defer mu.RUnlock()
 	std.Fatal(args...)
 }
+
 func Debugf(format string, args ...interface{}) {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -79,31 +79,7 @@ func Fatalf(format string, args ...interface{}) {
 	defer mu.RUnlock()
 	std.Fatalf(format, args...)
 }
-func Debugw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	std.Debugw(msg, fields)
-}
-func Infow(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	std.Infow(msg, fields)
-}
-func Warnw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	std.Warnw(msg, fields)
-}
-func Errorw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	std.Errorw(msg, fields)
-}
-func Fatalw(msg string, fields Fields) {
-	mu.RLock()
-	defer mu.RUnlock()
-	std.Fatalw(msg, fields)
-}
+
 func With(fields Fields) Recorder {
 	mu.RLock()
 	defer mu.RUnlock()

@@ -16,12 +16,6 @@ func (nopRecorder) Warnf(format string, args ...interface{})  {}
 func (nopRecorder) Errorf(format string, args ...interface{}) {}
 func (nopRecorder) Panicf(format string, args ...interface{}) {}
 func (nopRecorder) Fatalf(format string, args ...interface{}) {}
-func (nopRecorder) Debugw(msg string, fields Fields)          {}
-func (nopRecorder) Infow(msg string, fields Fields)           {}
-func (nopRecorder) Warnw(msg string, fields Fields)           {}
-func (nopRecorder) Errorw(msg string, fields Fields)          {}
-func (nopRecorder) Panicw(msg string, fields Fields)          {}
-func (nopRecorder) Fatalw(msg string, fields Fields)          {}
 
 func (nopRecorder) With(Fields) Recorder { return nopRecorder{} }
 
