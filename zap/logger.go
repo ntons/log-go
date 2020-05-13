@@ -1,91 +1,31 @@
 package zap
 
 import (
-	"fmt"
-
 	"github.com/ntons/log-go"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
-
-func fitFields(fields log.Fields) []interface{} {
-	arr := make([]interface{}, 0, len(fields)*2)
-	for key, val := range fields {
-		arr = append(arr, key, val)
-	}
-	return arr
-}
-
-func fitLevel(lev log.Level) zapcore.Level {
-	switch lev {
-	case log.DebugLevel:
-		return zapcore.DebugLevel
-	case log.InfoLevel:
-		return zapcore.InfoLevel
-	case log.WarnLevel:
-		return zapcore.WarnLevel
-	case log.ErrorLevel:
-		return zapcore.ErrorLevel
-	case log.PanicLevel:
-		return zapcore.PanicLevel
-	case log.FatalLevel:
-		return zapcore.FatalLevel
-	default:
-		panic("invalid log level")
-	}
-}
 
 type Recorder struct {
 	s *zap.SugaredLogger
 }
 
 func (r Recorder) Debug(args ...interface{}) {
-	fields, args := log.ExtractFields(args)
-	if len(fields) == 0 {
-		r.s.Debug(args...)
-	} else {
-		r.s.Debugw(fmt.Sprint(args...), fitFields(fields))
-	}
+	r.s.Debug(args...)
 }
 func (r Recorder) Info(args ...interface{}) {
-	fields, args := log.ExtractFields(args)
-	if len(fields) == 0 {
-		r.s.Info(args...)
-	} else {
-		r.s.Infow(fmt.Sprint(args...), fitFields(fields))
-	}
+	r.s.Info(args...)
 }
 func (r Recorder) Warn(args ...interface{}) {
-	fields, args := log.ExtractFields(args)
-	if len(fields) == 0 {
-		r.s.Warn(args...)
-	} else {
-		r.s.Warnw(fmt.Sprint(args...), fitFields(fields))
-	}
+	r.s.Warn(args...)
 }
 func (r Recorder) Error(args ...interface{}) {
-	fields, args := log.ExtractFields(args)
-	if len(fields) == 0 {
-		r.s.Error(args...)
-	} else {
-		r.s.Errorw(fmt.Sprint(args...), fitFields(fields))
-	}
+	r.s.Error(args...)
 }
 func (r Recorder) Panic(args ...interface{}) {
-	fields, args := log.ExtractFields(args)
-	if len(fields) == 0 {
-		r.s.Panic(args...)
-	} else {
-		r.s.Panicw(fmt.Sprint(args...), fitFields(fields))
-	}
+	r.s.Panic(args...)
 }
 func (r Recorder) Fatal(args ...interface{}) {
-	fields, args := log.ExtractFields(args)
-	if len(fields) == 0 {
-		r.s.Fatal(args...)
-	} else {
-		r.s.Fatalw(fmt.Sprint(args...), fitFields(fields))
-	}
+	r.s.Fatal(args...)
 }
 
 func (r Recorder) Debugf(format string, args ...interface{}) {
@@ -107,8 +47,31 @@ func (r Recorder) Fatalf(format string, args ...interface{}) {
 	r.s.Fatalf(format, args...)
 }
 
+func (r Recorder) Debugw(msg string, keyValuePairs ...interface{}) {
+	r.s.Debugw(msg, keyValuePairs...)
+}
+func (r Recorder) Infow(msg string, keyValuePairs ...interface{}) {
+	r.s.Infow(msg, keyValuePairs...)
+}
+func (r Recorder) Warnw(msg string, keyValuePairs ...interface{}) {
+	r.s.Warnw(msg, keyValuePairs...)
+}
+func (r Recorder) Errorw(msg string, keyValuePairs ...interface{}) {
+	r.s.Errorw(msg, keyValuePairs...)
+}
+func (r Recorder) Panicw(msg string, keyValuePairs ...interface{}) {
+	r.s.Panicw(msg, keyValuePairs...)
+}
+func (r Recorder) Fatalw(msg string, keyValuePairs ...interface{}) {
+	r.s.Fatalw(msg, keyValuePairs...)
+}
+
 func (r Recorder) With(fields log.Fields) log.Recorder {
-	return Recorder{s: r.s.With(fitFields(fields)...)}
+	zapfields := make([]interface{}, 0, len(fields)*2)
+	for key, val := range fields {
+		zapfields = append(zapfields, key, val)
+	}
+	return Recorder{s: r.s.With(zapfields...)}
 }
 
 type Logger struct {

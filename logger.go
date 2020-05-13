@@ -6,12 +6,14 @@ import (
 	"io"
 )
 
+type Fields map[string]interface{}
+type F = Fields // for short
+
 type Syncer interface {
 	Sync() error
 }
 
 type Recorder interface {
-	// msg = fmt.Sprint(args...)
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Warn(args ...interface{})
@@ -19,7 +21,6 @@ type Recorder interface {
 	Panic(args ...interface{})
 	Fatal(args ...interface{})
 
-	// msg = fmt.Sprintf(format, args...)
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
 	Warnf(format string, args ...interface{})
@@ -27,7 +28,13 @@ type Recorder interface {
 	Panicf(format string, args ...interface{})
 	Fatalf(format string, args ...interface{})
 
-	// preset fields
+	Debugw(msg string, keyValuePairs ...interface{})
+	Infow(msg string, keyValuePairs ...interface{})
+	Warnw(msg string, keyValuePairs ...interface{})
+	Errorw(msg string, keyValuePairs ...interface{})
+	Panicw(msg string, keyValuePairs ...interface{})
+	Fatalw(msg string, keyValuePairs ...interface{})
+
 	With(fields Fields) Recorder
 }
 
