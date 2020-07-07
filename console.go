@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -40,17 +41,18 @@ func ConsoleLoggerWithColor() ConsoleLoggerOption {
 type ConsoleLogger struct {
 	*consoleLoggerOptions
 	fields Fields
+	mu     sync.Mutex
 }
 
-func NewConsoleLogger(opts ...ConsoleLoggerOption) ConsoleLogger {
+func NewConsoleLogger(opts ...ConsoleLoggerOption) *ConsoleLogger {
 	o := &consoleLoggerOptions{}
 	for _, opt := range opts {
 		opt.apply(o)
 	}
-	return ConsoleLogger{consoleLoggerOptions: o}
+	return &ConsoleLogger{consoleLoggerOptions: o}
 }
 
-func (l ConsoleLogger) write(fields Fields) {
+func (l *ConsoleLogger) write(fields Fields) {
 	_, file, line, _ := runtime.Caller(3)
 	for key, val := range l.fields {
 		fields[key] = val
@@ -59,6 +61,9 @@ func (l ConsoleLogger) write(fields Fields) {
 	delete(fields, "lev")
 	msg := fields["msg"]
 	delete(fields, "msg")
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
 
 	if l.color {
 		switch lev {
@@ -82,71 +87,71 @@ func (l ConsoleLogger) write(fields Fields) {
 	fmt.Fprintf(os.Stdout, "%s\n", msg)
 }
 
-func (l ConsoleLogger) Close() error {
+func (l *ConsoleLogger) Close() error {
 	return l.Sync()
 }
-func (l ConsoleLogger) Sync() error {
+func (l *ConsoleLogger) Sync() error {
 	return os.Stdout.Sync()
 }
-func (l ConsoleLogger) Debug(args ...interface{}) {
+func (l *ConsoleLogger) Debug(args ...interface{}) {
 	if l.level <= DebugLevel {
 		l.write(Fields{"lev": "D", "msg": fmt.Sprint(args...)})
 	}
 }
-func (l ConsoleLogger) Info(args ...interface{}) {
+func (l *ConsoleLogger) Info(args ...interface{}) {
 	if l.level <= InfoLevel {
 		l.write(Fields{"lev": "I", "msg": fmt.Sprint(args...)})
 	}
 }
-func (l ConsoleLogger) Warn(args ...interface{}) {
+func (l *ConsoleLogger) Warn(args ...interface{}) {
 	if l.level <= WarnLevel {
 		l.write(Fields{"lev": "W", "msg": fmt.Sprint(args...)})
 	}
 }
-func (l ConsoleLogger) Error(args ...interface{}) {
+func (l *ConsoleLogger) Error(args ...interface{}) {
 	if l.level <= ErrorLevel {
 		l.write(Fields{"lev": "E", "msg": fmt.Sprint(args...)})
 	}
 }
-func (l ConsoleLogger) Panic(args ...interface{}) {
+func (l *ConsoleLogger) Panic(args ...interface{}) {
 	if l.level <= PanicLevel {
 		l.write(Fields{"lev": "P", "msg": fmt.Sprint(args...)})
 		panic(fmt.Sprint(args...))
 	}
 }
-func (l ConsoleLogger) Fatal(args ...interface{}) {
+func (l *ConsoleLogger) Fatal(args ...interface{}) {
 	if l.level <= FatalLevel {
 		l.write(Fields{"lev": "F", "msg": fmt.Sprint(args...)})
 		os.Exit(1)
 	}
 }
-func (l ConsoleLogger) Debugf(format string, args ...interface{}) {
+func (l *ConsoleLogger) Debugf(format string, args ...interface{}) {
 	if l.level <= DebugLevel {
 		l.write(Fields{"lev": "D", "msg": fmt.Sprintf(format, args...)})
 	}
 }
-func (l ConsoleLogger) Infof(format string, args ...interface{}) {
+func (l *ConsoleLogger) Infof(format string, args ...interface{}) {
 	if l.level <= InfoLevel {
 		l.write(Fields{"lev": "I", "msg": fmt.Sprintf(format, args...)})
 	}
 }
-func (l ConsoleLogger) Warnf(format string, args ...interface{}) {
+func (l *ConsoleLogger) Warnf(format string, args ...interface{}) {
 	if l.level <= WarnLevel {
 		l.write(Fields{"lev": "W", "msg": fmt.Sprintf(format, args...)})
 	}
 }
-func (l ConsoleLogger) Errorf(format string, args ...interface{}) {
+func (l *ConsoleLogger) Errorf(format string, args ...interface{}) {
 	if l.level <= ErrorLevel {
 		l.write(Fields{"lev": "E", "msg": fmt.Sprintf(format, args...)})
 	}
 }
-func (l ConsoleLogger) Panicf(format string, args ...interface{}) {
+func (l *ConsoleLogger) Panicf(format string, args ...interface{}) {
 	if l.level <= PanicLevel {
 		l.write(Fields{"lev": "P", "msg": fmt.Sprintf(format, args...)})
 		panic(fmt.Sprintf(format, args...))
 	}
 }
-func (l ConsoleLogger) Fatalf(format string, args ...interface{}) {
+func (l *ConsoleLogger) Fatalf(format string, args ...interface{}) {
 	if l.level <= FatalLevel {
 		l.write(Fields{"lev": "F", "msg": fmt.Sprintf(format, args...)})
 		os.Exit(1)
@@ -164,35 +169,35 @@ func mergeKeyValuePairsToFields(
 	}
 	return fields
 }
-func (l ConsoleLogger) Debugw(msg string, keyValuePairs ...interface{}) {
+func (l *ConsoleLogger) Debugw(msg string, keyValuePairs ...interface{}) {
 	if l.level <= DebugLevel {
 		l.write(mergeKeyValuePairsToFields(
 			Fields{"lev": "D", "msg": msg},
 			keyValuePairs))
 	}
 }
-func (l ConsoleLogger) Infow(msg string, keyValuePairs ...interface{}) {
+func (l *ConsoleLogger) Infow(msg string, keyValuePairs ...interface{}) {
 	if l.level <= InfoLevel {
 		l.write(mergeKeyValuePairsToFields(
 			Fields{"lev": "I", "msg": msg},
 			keyValuePairs))
 	}
 }
-func (l ConsoleLogger) Warnw(msg string, keyValuePairs ...interface{}) {
+func (l *ConsoleLogger) Warnw(msg string, keyValuePairs ...interface{}) {
 	if l.level <= WarnLevel {
 		l.write(mergeKeyValuePairsToFields(
 			Fields{"lev": "W", "msg": msg},
 			keyValuePairs))
 	}
 }
-func (l ConsoleLogger) Errorw(msg string, keyValuePairs ...interface{}) {
+func (l *ConsoleLogger) Errorw(msg string, keyValuePairs ...interface{}) {
 	if l.level <= ErrorLevel {
 		l.write(mergeKeyValuePairsToFields(
 			Fields{"lev": "E", "msg": msg},
 			keyValuePairs))
 	}
 }
-func (l ConsoleLogger) Panicw(msg string, keyValuePairs ...interface{}) {
+func (l *ConsoleLogger) Panicw(msg string, keyValuePairs ...interface{}) {
 	if l.level <= PanicLevel {
 		l.write(mergeKeyValuePairsToFields(
 			Fields{"lev": "P", "msg": msg},
@@ -200,7 +205,7 @@ func (l ConsoleLogger) Panicw(msg string, keyValuePairs ...interface{}) {
 		panic(msg)
 	}
 }
-func (l ConsoleLogger) Fatalw(msg string, keyValuePairs ...interface{}) {
+func (l *ConsoleLogger) Fatalw(msg string, keyValuePairs ...interface{}) {
 	if l.level <= FatalLevel {
 		l.write(mergeKeyValuePairsToFields(
 			Fields{"lev": "F", "msg": msg},
@@ -209,7 +214,7 @@ func (l ConsoleLogger) Fatalw(msg string, keyValuePairs ...interface{}) {
 	}
 }
 
-func (l ConsoleLogger) With(fields Fields) Recorder {
+func (l *ConsoleLogger) With(fields Fields) Recorder {
 	for key, val := range l.fields {
 		fields[key] = val
 	}
