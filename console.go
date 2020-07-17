@@ -85,7 +85,7 @@ func (l *ConsoleLogger) write(fields Fields) {
 	for key, val := range fields {
 		fmt.Fprintf(os.Stdout, "[%s:%v]", key, val)
 	}
-	fmt.Fprintf(os.Stdout, "%s\n", msg)
+	fmt.Fprintf(os.Stdout, " %s\n", msg)
 }
 
 func (l ConsoleLogger) Close() error {
