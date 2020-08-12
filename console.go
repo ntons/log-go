@@ -161,7 +161,7 @@ func (l ConsoleLogger) Fatalf(format string, args ...interface{}) {
 
 func mergeKeyValuePairsToFields(
 	fields Fields, keyValuePairs []interface{}) Fields {
-	for i := 1; i < len(keyValuePairs); i++ {
+	for i := 1; i < len(keyValuePairs); i += 2 {
 		key, ok := keyValuePairs[i-1].(string)
 		if !ok {
 			key = fmt.Sprintf("%v", keyValuePairs[i-1])

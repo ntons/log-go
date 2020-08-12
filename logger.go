@@ -7,7 +7,7 @@ import (
 )
 
 type Fields map[string]interface{}
-type F = Fields // for short
+type M = Fields // for short
 
 type Syncer interface {
 	Sync() error
