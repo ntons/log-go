@@ -66,3 +66,5 @@ func With(fields Fields) Recorder {
 func Withw(keyValuePairs ...interface{}) Recorder {
 	return std.Withw(keyValuePairs...)
 }
+
+func Sync() { std.Sync() }
