@@ -2,12 +2,8 @@
 
 package log
 
-import (
-	"io"
-)
-
 type Fields map[string]interface{}
-type M = Fields // for short
+type M = Fields
 
 type Syncer interface {
 	Sync() error
@@ -36,13 +32,10 @@ type Recorder interface {
 	Fatalw(msg string, keyValuePairs ...interface{})
 
 	With(fields Fields) Recorder
+	Withw(keyValuePairs ...interface{}) Recorder
 }
 
 type Logger interface {
-	// logger could be closed after replacing
-	io.Closer
-	// flush all data to destination
 	Syncer
-	// logger is also a recorder
 	Recorder
 }
