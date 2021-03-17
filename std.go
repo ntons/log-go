@@ -1,70 +1,38 @@
 package log
 
 import (
-	"go.uber.org/zap"
+	"sync/atomic"
+	"unsafe"
 )
 
-var std = func() Logger {
-	logger, err := zap.NewDevelopment(zap.AddCaller())
-	if err != nil {
-		panic(err)
-	}
-	return newZapLogger(logger)
-}()
+// wrap logger to pointer, the pointer could be swapped atomically
+type wrap struct{ Logger }
 
-func Debug(args ...interface{}) {
-	std.Debug(args...)
+var std = unsafe.Pointer(&wrap{StdLogger{}})
+
+func SetLogger(l Logger) Logger {
+	return (*wrap)(atomic.SwapPointer(&std, unsafe.Pointer(&wrap{l})))
 }
-func Info(args ...interface{}) {
-	std.Info(args...)
-}
-func Warn(args ...interface{}) {
-	std.Warn(args...)
-}
-func Error(args ...interface{}) {
-	std.Error(args...)
-}
-func Fatal(args ...interface{}) {
-	std.Fatal(args...)
+func getStd() Logger {
+	return (*wrap)(atomic.LoadPointer(&std))
 }
 
-func Debugf(format string, args ...interface{}) {
-	std.Debugf(format, args...)
-}
-func Infof(format string, args ...interface{}) {
-	std.Infof(format, args...)
-}
-func Warnf(format string, args ...interface{}) {
-	std.Warnf(format, args...)
-}
-func Errorf(format string, args ...interface{}) {
-	std.Errorf(format, args...)
-}
-func Fatalf(format string, args ...interface{}) {
-	std.Fatalf(format, args...)
-}
+func Debug(v ...interface{}) { getStd().Debug(v...) }
+func Info(v ...interface{})  { getStd().Info(v...) }
+func Warn(v ...interface{})  { getStd().Warn(v...) }
+func Error(v ...interface{}) { getStd().Error(v...) }
+func Fatal(v ...interface{}) { getStd().Fatal(v...) }
 
-func Debugw(msg string, keyValuePairs ...interface{}) {
-	std.Debugw(msg, keyValuePairs...)
-}
-func Infow(msg string, keyValuePairs ...interface{}) {
-	std.Infow(msg, keyValuePairs...)
-}
-func Warnw(msg string, keyValuePairs ...interface{}) {
-	std.Warnw(msg, keyValuePairs...)
-}
-func Errorw(msg string, keyValuePairs ...interface{}) {
-	std.Errorw(msg, keyValuePairs...)
-}
-func Fatalw(msg string, keyValuePairs ...interface{}) {
-	std.Fatalw(msg, keyValuePairs...)
-}
+func Debugf(format string, v ...interface{}) { getStd().Debugf(format, v...) }
+func Infof(format string, v ...interface{})  { getStd().Infof(format, v...) }
+func Warnf(format string, v ...interface{})  { getStd().Warnf(format, v...) }
+func Errorf(format string, v ...interface{}) { getStd().Errorf(format, v...) }
+func Fatalf(format string, v ...interface{}) { getStd().Fatalf(format, v...) }
 
-func With(fields Fields) Recorder {
-	return std.With(fields)
-}
-func Withw(keyValuePairs ...interface{}) Recorder {
-	return std.Withw(keyValuePairs...)
-}
+func Debugw(msg string, kvp ...interface{}) { getStd().Debugw(msg, kvp...) }
+func Infow(msg string, kvp ...interface{})  { getStd().Infow(msg, kvp...) }
+func Warnw(msg string, kvp ...interface{})  { getStd().Warnw(msg, kvp...) }
+func Errorw(msg string, kvp ...interface{}) { getStd().Errorw(msg, kvp...) }
+func Fatalw(msg string, kvp ...interface{}) { getStd().Fatalw(msg, kvp...) }
 
-func Sync() { std.Sync() }
+func With(kvp ...interface{}) Logger { return stack{getStd().With(kvp...)} }
