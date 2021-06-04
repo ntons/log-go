@@ -1,5 +1,9 @@
 package config
 
+import (
+	"go.uber.org/zap"
+)
+
 var (
 	DefaultZapJsonConfig = &Config{
 		Zap: &zap.Config{
