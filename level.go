@@ -1,20 +1,21 @@
 package log
 
 import (
+	"fmt"
 	"strings"
 )
 
 type Level int
 
 const (
-	AllLevel Level = iota
+	_ Level = iota
+	AllLevel
 	DebugLevel
 	InfoLevel
 	WarnLevel
 	ErrorLevel
 	PanicLevel
 	FatalLevel
-	UnknownLevel
 )
 
 const MaxLevelStringLen = 5
@@ -57,6 +58,17 @@ func ParseLevel(s string) (Level, bool) {
 	case "FATAL":
 		return FatalLevel, true
 	default:
-		return AllLevel, false
+		return 0, false
 	}
+}
+
+func (lev *Level) UnmarshalText(b []byte) error {
+	if len(b) > 0 {
+		_lev, ok := ParseLevel(string(b))
+		if !ok {
+			return fmt.Errorf("invalid level: %s", b)
+		}
+		*lev = _lev
+	}
+	return nil
 }

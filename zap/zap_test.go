@@ -5,7 +5,7 @@ import (
 
 	_zap "go.uber.org/zap"
 
-	"github.com/ntons/log-go/loggers/zap"
+	"github.com/ntons/log-go/zap"
 )
 
 func TestZap(t *testing.T) {

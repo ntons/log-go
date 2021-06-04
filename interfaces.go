@@ -1,5 +1,3 @@
-// Custom Logger MUST skip 1 more caller stack for std wrapper
-
 package log
 
 type Logger interface {
@@ -25,4 +23,13 @@ type Logger interface {
 	Fatalw(msg string, kvp ...interface{})
 
 	With(kvp ...interface{}) Logger
+}
+
+type LevelSetter interface {
+	SetLevel(level Level)
+}
+
+type LoggerLevelSetter interface {
+	Logger
+	LevelSetter
 }
