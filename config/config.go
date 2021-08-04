@@ -12,7 +12,7 @@ type Config struct {
 	Zap   *zap.Config `json:"zap" yaml:"zap"`
 }
 
-func (cfg *Config) Use() error {
+func (cfg Config) Use() error {
 	if cfg.Zap != nil {
 		zlogger, err := cfg.Zap.Build()
 		if err != nil {
