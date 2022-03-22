@@ -1,6 +1,6 @@
 package log
 
-var std LoggerLevelSetter
+var Std LoggerLevelSetter
 
 func SetStdLogger(logger LoggerLevelSetter) LoggerLevelSetter {
 	oldStd := std
