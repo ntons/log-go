@@ -3,33 +3,33 @@ package log
 var Std LoggerLevelSetter
 
 func SetStdLogger(logger LoggerLevelSetter) LoggerLevelSetter {
-	oldStd := std
-	std = logger
+	oldStd := Std
+	Std = logger
 	return oldStd
 }
 func SetStdLevel(level Level) {
-	std.SetLevel(level)
+	Std.SetLevel(level)
 }
 
-func Debug(v ...interface{}) { std.Debug(v...) }
-func Info(v ...interface{})  { std.Info(v...) }
-func Warn(v ...interface{})  { std.Warn(v...) }
-func Error(v ...interface{}) { std.Error(v...) }
-func Fatal(v ...interface{}) { std.Fatal(v...) }
+func Debug(v ...interface{}) { Std.Debug(v...) }
+func Info(v ...interface{})  { Std.Info(v...) }
+func Warn(v ...interface{})  { Std.Warn(v...) }
+func Error(v ...interface{}) { Std.Error(v...) }
+func Fatal(v ...interface{}) { Std.Fatal(v...) }
 
-func Debugf(format string, v ...interface{}) { std.Debugf(format, v...) }
-func Infof(format string, v ...interface{})  { std.Infof(format, v...) }
-func Warnf(format string, v ...interface{})  { std.Warnf(format, v...) }
-func Errorf(format string, v ...interface{}) { std.Errorf(format, v...) }
-func Fatalf(format string, v ...interface{}) { std.Fatalf(format, v...) }
+func Debugf(format string, v ...interface{}) { Std.Debugf(format, v...) }
+func Infof(format string, v ...interface{})  { Std.Infof(format, v...) }
+func Warnf(format string, v ...interface{})  { Std.Warnf(format, v...) }
+func Errorf(format string, v ...interface{}) { Std.Errorf(format, v...) }
+func Fatalf(format string, v ...interface{}) { Std.Fatalf(format, v...) }
 
-func Debugw(msg string, kvp ...interface{}) { std.Debugw(msg, kvp...) }
-func Infow(msg string, kvp ...interface{})  { std.Infow(msg, kvp...) }
-func Warnw(msg string, kvp ...interface{})  { std.Warnw(msg, kvp...) }
-func Errorw(msg string, kvp ...interface{}) { std.Errorw(msg, kvp...) }
-func Fatalw(msg string, kvp ...interface{}) { std.Fatalw(msg, kvp...) }
+func Debugw(msg string, kvp ...interface{}) { Std.Debugw(msg, kvp...) }
+func Infow(msg string, kvp ...interface{})  { Std.Infow(msg, kvp...) }
+func Warnw(msg string, kvp ...interface{})  { Std.Warnw(msg, kvp...) }
+func Errorw(msg string, kvp ...interface{}) { Std.Errorw(msg, kvp...) }
+func Fatalw(msg string, kvp ...interface{}) { Std.Fatalw(msg, kvp...) }
 
-func With(kvp ...interface{}) Logger { return addStack(std.With(kvp...)) }
+func With(kvp ...interface{}) Logger { return addStack(Std.With(kvp...)) }
 
 type wrap struct{ logger Logger }
 
